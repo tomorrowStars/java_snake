@@ -8,30 +8,31 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Random;
 
-public class GamePanel extends JPanel implements KeyListener , ActionListener {
+public class GamePanel extends JPanel implements KeyListener, ActionListener {
     // 画面板
     int length;                     // 长度
     int[] snakeX = new int[600];    // 坐标X
     int[] snakeY = new int[600];    // 坐标Y
-
     // 方向
     String fx = "R";                // R: 右， L:左， U：上， D:下
-
-    // 游戏是否开始
-    boolean isStart;
-    // 游戏是否暂停
-    boolean isSuspend;
-
-    // 定时器：时间：100毫秒
-    Timer timer = new Timer(100, this);
-
     // 食物
     int foodX;  // 食物 横坐标
     int foodY;  // 食物 纵坐标
     //  随机数
     Random random = new Random();
+    // 得分
+    int score;
+    // 难度
+    int level;
+    String levelName;
+    int delay;
 
-
+    // 游戏是否开始
+    boolean isStart;
+    // 游戏是否暂停
+    boolean isSuspend;
+    // 定时器：时间：100毫秒
+    Timer timer = new Timer(1000, this);
 
     public GamePanel() {
         this.init();
@@ -62,7 +63,9 @@ public class GamePanel extends JPanel implements KeyListener , ActionListener {
 
         foodX = 25 + 25 * random.nextInt(34);
         foodY = 25 + 25 * random.nextInt(24);
-
+        this.score = 0;
+        this.level = 2;
+        this.setDelayByLevel(this.level);
     }
 
     /**
@@ -81,6 +84,7 @@ public class GamePanel extends JPanel implements KeyListener , ActionListener {
 
         // 画一条静态的小蛇
 
+        // 头部
         if (fx.equals("R")) {
             Data.right.paintIcon(this, g, snakeX[0], snakeY[0]);
         } else if (fx.equals("L")) {
@@ -93,12 +97,20 @@ public class GamePanel extends JPanel implements KeyListener , ActionListener {
 //        Data.body.paintIcon(this, g, snakeX[1], snakeY[1]);
 //        Data.body.paintIcon(this, g, snakeX[2], snakeY[2]);
 
+        // 身体
         for (int i = 1; i < length; i++) {
             Data.body.paintIcon(this, g, snakeX[i], snakeY[i]);
         }
 
         // 食物
-        Data.food.paintIcon(this, g, foodX,foodY);
+        Data.food.paintIcon(this, g, foodX, foodY);
+
+        // 长度,得分,难度
+        g.setColor(Color.blue);
+        g.setFont(new Font("楷书", Font.PLAIN, 14));
+        g.drawString("长度："+length,765,28);
+        g.drawString("得分："+score,765,43);
+        g.drawString("难度："+levelName,765,58);
 
 
         // 游戏提示：开始提示
@@ -110,9 +122,38 @@ public class GamePanel extends JPanel implements KeyListener , ActionListener {
             g.setColor(Color.ORANGE);
             g.setFont(new Font("宋体", Font.ITALIC, 35));
             g.drawString("按回车结束游戏!", 200, 350);
+
         }
 
+        timer.setDelay(this.delay);
 
+
+
+    }
+
+    public void setDelayByLevel(int level) {
+        switch (level) {
+            case 1:
+                delay = 1000;
+                levelName = "简单";
+                break;
+            case 2:
+                delay = 500;
+                levelName = "正常";
+                break;
+            case 3:
+                delay = 100;
+                levelName = "困难";
+                break;
+            case 4:
+                delay = 50;
+                levelName = "超难";
+                break;
+            default:
+                delay = 500;
+                levelName = "正常";
+                break;
+        }
     }
 
     // 键盘按下未释放
@@ -125,12 +166,11 @@ public class GamePanel extends JPanel implements KeyListener , ActionListener {
                 isStart = true;     // 程序开始
 //                timer.restart();       // timer再开
 //                isSuspend = false;   // 程序暂停
-            } else{
+            } else {
                 // 暂停处理
                 this.setSuspend();
             }
-        }
-        else if (keyCode == KeyEvent.VK_ENTER) {
+        } else if (keyCode == KeyEvent.VK_ENTER) {
             // 暂停游戏
             if (isStart == true) {
                 timer.stop();       // 程序正在运行则 timer暂停
@@ -159,10 +199,10 @@ public class GamePanel extends JPanel implements KeyListener , ActionListener {
                     } else {
                         // 重新开始
 //                        isStart = true;
-                        timer.restart();       // 程序已暂停则 timer再开
-                        isSuspend = false;
                         this.init();        // 初始化画面
                         super.repaint();    // 刷新画面
+                        timer.restart();       // 程序已暂停则 timer再开
+                        isSuspend = false;
                     }
                 } else {
                     // 程序还未开始
@@ -172,23 +212,20 @@ public class GamePanel extends JPanel implements KeyListener , ActionListener {
 
             }
 
-        }
-        else if (keyCode == KeyEvent.VK_RIGHT) {
+        } else if (keyCode == KeyEvent.VK_RIGHT) {
             fx = "R";
-        }
-        else if (keyCode == KeyEvent.VK_LEFT) {
+        } else if (keyCode == KeyEvent.VK_LEFT) {
             fx = "L";
-        }
-        else if (keyCode == KeyEvent.VK_UP) {
+        } else if (keyCode == KeyEvent.VK_UP) {
             fx = "U";
-        }
-        else if (keyCode == KeyEvent.VK_DOWN) {
+        } else if (keyCode == KeyEvent.VK_DOWN) {
             fx = "D";
         }
     }
 
     /**
      * 暂停处理
+     *
      * @param
      */
     private void setSuspend() {
@@ -203,15 +240,16 @@ public class GamePanel extends JPanel implements KeyListener , ActionListener {
 
     /**
      * 执行定时操作
+     *
      * @param e
      */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (isStart) {
             // 身体移动
-            for (int i = length -1; i > 0; i--) {
-                snakeX[i] = snakeX[i-1];
-                snakeY[i] = snakeY[i-1];
+            for (int i = length - 1; i > 0; i--) {
+                snakeX[i] = snakeX[i - 1];
+                snakeY[i] = snakeY[i - 1];
             }
             // 右侧移动
             if (fx.equals("R")) {
@@ -219,34 +257,31 @@ public class GamePanel extends JPanel implements KeyListener , ActionListener {
                 if (snakeX[0] > 825) {
                     // todo 到边界时应该报错误信息
                     snakeX[0] = 25;
-                } else{
+                } else {
                     snakeX[0] = snakeX[0] + 25;
                 }
-            }
-            else if (fx.equals("L")) {
+            } else if (fx.equals("L")) {
                 // 头部移动
                 if (snakeX[0] < 50) {
                     // todo 到边界时应该报错误信息
                     snakeX[0] = 850;
-                } else{
+                } else {
                     snakeX[0] = snakeX[0] - 25;
                 }
-            }
-            else if (fx.equals("U")) {
+            } else if (fx.equals("U")) {
                 // 头部移动
                 if (snakeY[0] < 90) {
                     // todo 到边界时应该报错误信息
                     snakeY[0] = 650;
-                } else{
+                } else {
                     snakeY[0] = snakeY[0] - 25;
                 }
-            }
-            else if (fx.equals("D")) {
+            } else if (fx.equals("D")) {
                 // 头部移动
                 if (snakeY[0] > 625) {
                     // todo 到边界时应该报错误信息
                     snakeY[0] = 75;
-                } else{
+                } else {
                     snakeY[0] = snakeY[0] + 25;
                 }
             }
@@ -257,6 +292,8 @@ public class GamePanel extends JPanel implements KeyListener , ActionListener {
                 // 重新生成食物坐标
                 foodX = 25 + 25 * random.nextInt(34);
                 foodY = 75 + 25 * random.nextInt(24);
+
+                this.score = this.score + this.level * 5;
             }
 
             // 刷新画面
@@ -268,17 +305,15 @@ public class GamePanel extends JPanel implements KeyListener , ActionListener {
 
     }
 
-    // 按下弹起
+
+    // 按下并释放某个键
     @Override
     public void keyTyped(KeyEvent e) {
 
     }
 
-
     // 释放某个键
     @Override
     public void keyReleased(KeyEvent e) {
-
     }
-
 }
