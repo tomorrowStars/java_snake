@@ -31,6 +31,8 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     boolean isStart;
     // 游戏是否暂停
     boolean isSuspend;
+    // 游戏失败
+    private boolean isErr;
     // 定时器：时间：100毫秒
     Timer timer = new Timer(1000, this);
 
@@ -60,11 +62,12 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         this.fx = "R";
         isStart = false;
         isSuspend = false;
+        isErr = false;
 
         foodX = 25 + 25 * random.nextInt(34);
-        foodY = 25 + 25 * random.nextInt(24);
+        foodY = 75 + 25 * random.nextInt(24);
         this.score = 0;
-        this.level = 2;
+        this.level = 4;
         this.setDelayByLevel(this.level);
     }
 
@@ -113,7 +116,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         g.drawString("难度："+levelName,765,58);
 
 
-        // 游戏提示：开始提示
+        // 游戏开始提示
         if (isStart == false) {
             g.setColor(Color.white);
             g.setFont(new Font("宋体", Font.BOLD, 40));
@@ -122,7 +125,12 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             g.setColor(Color.ORANGE);
             g.setFont(new Font("宋体", Font.ITALIC, 35));
             g.drawString("按回车结束游戏!", 200, 350);
-
+        }
+        // 游戏失败提示
+        if (isErr == true) {
+            g.setColor(Color.GREEN);
+            g.setFont(new Font("宋体", Font.BOLD, 40));
+            g.drawString("游戏失败！", 200, 250);
         }
 
         timer.setDelay(this.delay);
@@ -161,14 +169,18 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
         if (keyCode == KeyEvent.VK_SPACE) {
+            // 游戏未开始
             if (isStart == false) {
-                super.repaint();    // 刷新画面
+//                super.repaint();    // 刷新画面
                 isStart = true;     // 程序开始
+                isErr = false;
 //                timer.restart();       // timer再开
 //                isSuspend = false;   // 程序暂停
+            // 游戏已开始
             } else {
                 // 暂停处理
-                this.setSuspend();
+//                this.setSuspend();
+                isStart = !isStart;
             }
         } else if (keyCode == KeyEvent.VK_ENTER) {
             // 暂停游戏
@@ -198,20 +210,15 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                         isSuspend = false;
                     } else {
                         // 重新开始
-//                        isStart = true;
                         this.init();        // 初始化画面
                         super.repaint();    // 刷新画面
                         timer.restart();       // 程序已暂停则 timer再开
-                        isSuspend = false;
                     }
                 } else {
                     // 程序还未开始
                     // 什么也不做
                 }
-
-
             }
-
         } else if (keyCode == KeyEvent.VK_RIGHT) {
             fx = "R";
         } else if (keyCode == KeyEvent.VK_LEFT) {
@@ -231,6 +238,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private void setSuspend() {
         // 暂停处理
         if (isSuspend == true) {
+            super.repaint();
             timer.restart();       // 程序已暂停则 timer再开
         } else {
             timer.stop();       // 程序正在运行则 timer暂停
@@ -257,6 +265,9 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                 if (snakeX[0] > 825) {
                     // todo 到边界时应该报错误信息
                     snakeX[0] = 25;
+
+                    isStart = false;
+                    isErr = true;
                 } else {
                     snakeX[0] = snakeX[0] + 25;
                 }
