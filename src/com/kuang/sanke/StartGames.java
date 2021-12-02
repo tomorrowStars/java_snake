@@ -1,6 +1,8 @@
 package com.kuang.sanke;
 
 import javax.swing.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class StartGames {
     public static void main(String[] args) {
@@ -24,6 +26,18 @@ public class StartGames {
 
         // 窗口是否展示
         frame.setVisible(true);
+
+//        frame.addWindowListener(new WindowAdapter() {
+//            @Override
+//            public void windowClosing(WindowEvent e) {
+//                int i = JOptionPane.showConfirmDialog(null, "确认退出吗？");
+//                if (i == JOptionPane.OK_OPTION) {
+//                    System.exit(0);
+//                } else {
+//
+//                }
+//            }
+//        });
 
     }
 }

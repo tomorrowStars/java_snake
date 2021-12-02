@@ -67,7 +67,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         foodX = 25 + 25 * random.nextInt(34);
         foodY = 75 + 25 * random.nextInt(24);
         this.score = 0;
-        this.level = 4;
+        this.level = 3;
         this.setDelayByLevel(this.level);
     }
 
@@ -86,7 +86,6 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         g.fillRect(25, 75, 850, 600);
 
         // 画一条静态的小蛇
-
         // 头部
         if (fx.equals("R")) {
             Data.right.paintIcon(this, g, snakeX[0], snakeY[0]);
@@ -97,9 +96,6 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         } else if (fx.equals("D")) {
             Data.down.paintIcon(this, g, snakeX[0], snakeY[0]);
         }
-//        Data.body.paintIcon(this, g, snakeX[1], snakeY[1]);
-//        Data.body.paintIcon(this, g, snakeX[2], snakeY[2]);
-
         // 身体
         for (int i = 1; i < length; i++) {
             Data.body.paintIcon(this, g, snakeX[i], snakeY[i]);
@@ -113,7 +109,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         g.setFont(new Font("楷书", Font.PLAIN, 14));
         g.drawString("长度："+length,765,28);
         g.drawString("得分："+score,765,43);
-        g.drawString("难度："+levelName,765,58);
+//        g.drawString("难度："+levelName,765,58);
 
 
         // 游戏开始提示
@@ -133,10 +129,14 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             g.drawString("游戏失败！", 200, 250);
         }
 
+        if (isSuspend == true) {
+            g.setColor(Color.GREEN);
+            g.setFont(new Font("宋体", Font.BOLD, 40));
+            g.drawString("游戏暂停，按空格键继续！", 200, 250);
+        }
+
+        // 设置 游戏级别（即：刷新间隔）
         timer.setDelay(this.delay);
-
-
-
     }
 
     public void setDelayByLevel(int level) {
@@ -171,32 +171,35 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         if (keyCode == KeyEvent.VK_SPACE) {
             // 游戏未开始
             if (isStart == false) {
+                this.init();          //
 //                super.repaint();    // 刷新画面
                 isStart = true;     // 程序开始
-                isErr = false;
+//                isErr = false;
 //                timer.restart();       // timer再开
 //                isSuspend = false;   // 程序暂停
             // 游戏已开始
             } else {
                 // 暂停处理
+                isSuspend = !isSuspend;
+                super.repaint();    // 刷新画面
 //                this.setSuspend();
-                isStart = !isStart;
+//                isStart = !isStart;
             }
         } else if (keyCode == KeyEvent.VK_ENTER) {
             // 暂停游戏
             if (isStart == true) {
-                timer.stop();       // 程序正在运行则 timer暂停
+//                timer.stop();       // 程序正在运行则 timer暂停
                 isSuspend = true;
             }
 
             // 是否关闭游戏
             int rtn = JOptionPane.showConfirmDialog(this, "是否关闭游戏", null, JOptionPane.YES_NO_OPTION);
+            // 是（ yes：0）
+            // 否（ NO： 1）
             if (rtn == 0) {
-                //是（ yes：0）  // 否（ NO： 1）
                 System.exit(0);  // 关闭游戏
             } else {
                 // todo 光标在【No】上时，键盘回车 会关闭窗口
-
                 // 程序正在运行
                 if (isStart == true) {
                     // "继续游戏 or 重新开始"
@@ -206,13 +209,12 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                     if (rtn2 == 0) {
                         //是
                         // 继续游戏
-                        timer.restart();       // 程序已暂停则 timer再开
                         isSuspend = false;
                     } else {
                         // 重新开始
+                        isSuspend = false;
                         this.init();        // 初始化画面
                         super.repaint();    // 刷新画面
-                        timer.restart();       // 程序已暂停则 timer再开
                     }
                 } else {
                     // 程序还未开始
@@ -231,21 +233,35 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     }
 
     /**
-     * 暂停处理
-     *
-     * @param
+     * 边界判断
      */
-    private void setSuspend() {
-        // 暂停处理
-        if (isSuspend == true) {
-            super.repaint();
-            timer.restart();       // 程序已暂停则 timer再开
-        } else {
-            timer.stop();       // 程序正在运行则 timer暂停
+    public void checkBoundary() {
+        // 右侧移动
+        if (fx.equals("R")) {
+            if (snakeX[0] > 825) {
+                isStart = false;
+                isErr = true;
+            }
+        // 左侧移动
+        } else if (fx.equals("L")) {
+            if (snakeX[0] < 50) {
+                isStart = false;
+                isErr = true;
+            }
+        // 上侧移动
+        } else if (fx.equals("U")) {
+            if (snakeY[0] < 90) {
+                isStart = false;
+                isErr = true;
+            }
+        // 下侧移动
+        } else if (fx.equals("D")) {
+            if (snakeY[0] > 625) {
+                isStart = false;
+                isErr = true;
+            }
         }
-        isSuspend = !isSuspend;
     }
-
     /**
      * 执行定时操作
      *
@@ -253,47 +269,61 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (isStart) {
-            // 身体移动
-            for (int i = length - 1; i > 0; i--) {
-                snakeX[i] = snakeX[i - 1];
-                snakeY[i] = snakeY[i - 1];
-            }
-            // 右侧移动
-            if (fx.equals("R")) {
+        if (isStart ==true && isErr == false && isSuspend == false) {
+            // 边界判断
+            this.checkBoundary();
+            if (isErr == false) {
+                // 身体移动
+                for (int i = length - 1; i > 0; i--) {
+                    snakeX[i] = snakeX[i - 1];
+                    snakeY[i] = snakeY[i - 1];
+                }
                 // 头部移动
-                if (snakeX[0] > 825) {
-                    // todo 到边界时应该报错误信息
-                    snakeX[0] = 25;
-
-                    isStart = false;
-                    isErr = true;
-                } else {
+                // 右侧移动
+                if (fx.equals("R")) {
                     snakeX[0] = snakeX[0] + 25;
-                }
-            } else if (fx.equals("L")) {
-                // 头部移动
-                if (snakeX[0] < 50) {
-                    // todo 到边界时应该报错误信息
-                    snakeX[0] = 850;
-                } else {
+//                    // 头部移动
+//                    if (snakeX[0] > 825) {
+//                        // todo 到边界时应该报错误信息
+//    //                    snakeX[0] = 25;
+//                        isStart = false;
+//                        isErr = true;
+//                    } else {
+//                        snakeX[0] = snakeX[0] + 25;
+//                    }
+                } else if (fx.equals("L")) {
                     snakeX[0] = snakeX[0] - 25;
-                }
-            } else if (fx.equals("U")) {
-                // 头部移动
-                if (snakeY[0] < 90) {
-                    // todo 到边界时应该报错误信息
-                    snakeY[0] = 650;
-                } else {
+//                    // 头部移动
+//                    if (snakeX[0] < 50) {
+//                        // todo 到边界时应该报错误信息
+//    //                    snakeX[0] = 850;
+//                        isStart = false;
+//                        isErr = true;
+//                    } else {
+//                        snakeX[0] = snakeX[0] - 25;
+//                    }
+                } else if (fx.equals("U")) {
                     snakeY[0] = snakeY[0] - 25;
-                }
-            } else if (fx.equals("D")) {
-                // 头部移动
-                if (snakeY[0] > 625) {
-                    // todo 到边界时应该报错误信息
-                    snakeY[0] = 75;
-                } else {
+//                    // 头部移动
+//                    if (snakeY[0] < 90) {
+//                        // todo 到边界时应该报错误信息
+//    //                    snakeY[0] = 650;
+//                        isStart = false;
+//                        isErr = true;
+//                    } else {
+//                        snakeY[0] = snakeY[0] - 25;
+//                    }
+                } else if (fx.equals("D")) {
                     snakeY[0] = snakeY[0] + 25;
+//                    // 头部移动
+//                    if (snakeY[0] > 625) {
+//                        // todo 到边界时应该报错误信息
+//    //                    snakeY[0] = 75;
+//                        isStart = false;
+//                        isErr = true;
+//                    } else {
+//                        snakeY[0] = snakeY[0] + 25;
+//                    }
                 }
             }
 
@@ -306,6 +336,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
 
                 this.score = this.score + this.level * 5;
             }
+
 
             // 刷新画面
             super.repaint();
