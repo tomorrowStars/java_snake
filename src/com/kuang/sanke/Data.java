@@ -11,6 +11,8 @@ public class Data {
     // 头部的图片 URL: 定位图片的地址  ImageIcon：图片
     public static URL headerUrl = Data.class.getResource("/statics/header.png");
     public static ImageIcon header = new ImageIcon(headerUrl);
+    public static URL headerUrl3 = Data.class.getResource("/statics/header3.png");
+    public static ImageIcon header3 = new ImageIcon(headerUrl3);
 
     // 身体的图片
     public static URL bodyUrl = Data.class.getResource("/statics/body.png");

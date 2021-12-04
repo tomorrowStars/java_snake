@@ -77,10 +77,10 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g); // 清屏
-        this.setBackground(Color.white);// 设置背景颜色
+        this.setBackground(Color.cyan);// 设置背景颜色
 
         //绘制头部的广告栏
-        Data.header.paintIcon(this, g, 25, 11);
+        Data.header3.paintIcon(this, g, 25, 11);
 
         // 绘制游戏区域
         g.fillRect(25, 75, 850, 600);
@@ -129,6 +129,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             g.drawString("游戏失败！", 200, 250);
         }
 
+        // 暂停信息显示
         if (isSuspend == true) {
             g.setColor(Color.GREEN);
             g.setFont(new Font("宋体", Font.BOLD, 40));
@@ -182,8 +183,6 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                 // 暂停处理
                 isSuspend = !isSuspend;
                 super.repaint();    // 刷新画面
-//                this.setSuspend();
-//                isStart = !isStart;
             }
         } else if (keyCode == KeyEvent.VK_ENTER) {
             // 暂停游戏
@@ -222,13 +221,22 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                 }
             }
         } else if (keyCode == KeyEvent.VK_RIGHT) {
-            fx = "R";
+            if (fx != "L") {
+                fx = "R";
+            }
+
         } else if (keyCode == KeyEvent.VK_LEFT) {
-            fx = "L";
+            if (fx != "R") {
+                fx = "L";
+            }
         } else if (keyCode == KeyEvent.VK_UP) {
-            fx = "U";
+            if (fx != "D") {
+                fx = "U";
+            }
         } else if (keyCode == KeyEvent.VK_DOWN) {
-            fx = "D";
+            if (fx != "U") {
+                fx = "D";
+            }
         }
     }
 
@@ -326,6 +334,15 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
 //                    }
                 }
             }
+
+            // 如果头部和身体重合
+            for (int i = 1; i < length; i++) {
+                if (snakeX[0] == snakeX[i] && snakeY[0] == snakeY[i]) {
+                    isErr = true;
+                    isStart = false;
+                }
+            }
+
 
             // 如果小蛇的头和食物的坐标重合了
             if (snakeX[0] == foodX && snakeY[0] == foodY) {
